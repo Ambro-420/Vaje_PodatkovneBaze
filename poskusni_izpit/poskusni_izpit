@@ -1,0 +1,66 @@
+--1) naloga
+--a)
+SELECT ime, priimek FROM osebe
+ORDER BY priimek;
+
+--b)
+SELECT * FROM predmeti
+WHERE smer LIKE ('1PrMa');
+
+--c)
+SELECT ime FROM predmeti
+GROUP BY ime
+HAVING COUNT(DISTINCT smer) > 1;
+
+--2) naloga
+--a)
+SELECT SUM(ure) AS 'število ur' FROM osebe JOIN skupine ON osebe.id = skupine.učitelj
+GROUP BY ime;
+
+--b)
+SELECT ime, priimek FROM osebe JOIN skupine ON osebe.id = skupine.učitelj
+GROUP BY ime
+HAVING COUNT(DISTINCT tip) > 1;
+
+--c)
+SELECT predmeti.smer, COUNT(DISTINCT osebe.ime) FROM osebe 
+JOIN skupine ON osebe.id = skupine.učitelj 
+JOIN dodelitve ON skupine.id = dodelitve.skupina
+JOIN predmeti ON dodelitve.predmet = predmeti.id
+GROUP BY predmeti.smer;
+
+--3) naloga
+--a)
+UPDATE predmeti
+SET smer = 'PeMa'
+WHERE smer = '2PeMa';
+
+--b)
+INSERT INTO predmeti (ime, smer)
+SELECT DISTINCT p1.ime, '0Mate'
+FROM predmeti p1
+JOIN predmeti p2 
+    ON p1.ime = p2.ime
+WHERE p1.smer LIKE '1%'
+  AND p2.smer LIKE '2%';
+
+--4) naloga
+--a)
+SELECT 
+    osebe.id, 
+    osebe.ime, 
+    osebe.priimek, 
+    COALESCE(SUM(skupine.ure), 0) AS 'skupno števlo ur vaj'
+FROM 
+    osebe 
+LEFT JOIN skupine 
+    ON osebe.id = skupine.učitelj
+    AND (skupine.tip = 'V' OR skupine.tip = 'L') -- zaradi tega pogoja se ure kjer tip = P izpišejo kot NULL
+GROUP BY ime;
+
+--b)
+SELECT predmeti.id, predmeti.ime, predmeti.smer FROM skupine 
+JOIN dodelitve ON skupine.id = dodelitve.skupina
+JOIN predmeti ON dodelitve.skupina = predmeti.id
+GROUP BY predmeti.ime
+HAVING tip = 'S' and tip <> 'P' and tip <> 'V';

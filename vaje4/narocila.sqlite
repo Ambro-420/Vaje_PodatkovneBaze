@@ -1,0 +1,37 @@
+--CREATE TABLE stranka(
+--id, 
+--ime NOT NULL
+--)
+
+--CREATE TABLE narocilo(
+--id PRIMARY KEY,
+--kolicina INTEGER NOT NULL
+--    CHECK(KOLICINA > 0),
+--stranka INTEGER NOT NULL,
+--status TEXT DEFAULT 'oddano'
+--    CHECK (status IN ('oddano', 'v obdelavi', 'na poti', 'zaključeno')),
+--    FOREIGN KEY (stranka) REFERENCES stranka(id)
+--)
+
+--DROP TABLE IF EXISTS stranka;
+--DROP TABLE IF EXISTS narocilo;
+
+--CREATE TABLE stranka (
+--    id INTEGER PRIMARY KEY,
+--    ime TEXT NOT NULL
+--);
+
+--INSERT INTO stranka (id, ime)
+--VALUES 
+--(1, 'Alenka'),
+--(2, 'Branko'),
+--(3, 'Cvetka'),
+--(4, 'David');
+
+--CREATE TABLE Narocilo (
+--    id INTEGER PRIMARY KEY,
+--    kolicina INTEGER NOT NULL CHECK (kolicina > 0),
+--    stranka INTEGER NOT NULL,
+--    status TEXT DEFAULT 'oddano' CHECK (status IN ('oddano', 'v obdelavi', 'na poti', 'zaključeno')),
+--    FOREIGN KEY (stranka) REFERENCES Stranka(id)
+--);
