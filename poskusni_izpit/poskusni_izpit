@@ -1,48 +1,68 @@
 --1) naloga
---a)
+a)
 SELECT ime, priimek FROM osebe
-ORDER BY priimek;
+ORDER BY priimek
 
---b)
-SELECT * FROM predmeti
-WHERE smer LIKE ('1PrMa');
+b)
+SELECT ime FROM predmeti
+WHERE smer = "1PrMa"
 
---c)
+c)
 SELECT ime FROM predmeti
 GROUP BY ime
-HAVING COUNT(DISTINCT smer) > 1;
+HAVING COUNT(DISTINCT smer) >1
 
 --2) naloga
---a)
-SELECT SUM(ure) AS 'število ur' FROM osebe JOIN skupine ON osebe.id = skupine.učitelj
-GROUP BY ime;
+a)
+SELECT ime, priimek SUM(ure) AS "skupno število ur" FROM osebe JOIN skupine on osebe.id = skupine.učitelj
+GROUP BY osebe.id, ime, priimek #grupiranje po id-ju, da se osebe z istimi imeni ne pomešajo
 
---b)
-SELECT ime, priimek FROM osebe JOIN skupine ON osebe.id = skupine.učitelj
-GROUP BY ime
-HAVING COUNT(DISTINCT tip) > 1;
+b)
+SELECT ime, priimek 
+FROM osebe
+JOIN skupine on osebe.id = skupine.učitelj
+GROUP BY osebe.id, ime, priimek 
+HAVING SUM(CASE WHEN tip = 'P' THEN 1 ELSE 0 END) > 0 
+   AND SUM(CASE WHEN tip IN ('V', 'L') THEN 1 ELSE 0 END) > 0;
 
---c)
-SELECT predmeti.smer, COUNT(DISTINCT osebe.ime) FROM osebe 
+c)
+SELECT COUNT(DISTINCT osebe.id), smer FROM osebe 
 JOIN skupine ON osebe.id = skupine.učitelj 
 JOIN dodelitve ON skupine.id = dodelitve.skupina
 JOIN predmeti ON dodelitve.predmet = predmeti.id
-GROUP BY predmeti.smer;
+GROUP BY predmeti.smer
 
---3) naloga
---a)
+--3)
+a)
 UPDATE predmeti
-SET smer = 'PeMa'
-WHERE smer = '2PeMa';
+SET smer = "PeMa"
+WHERE smer = "2PeMa"
 
---b)
-INSERT INTO predmeti (ime, smer)
+posebno) želim imena predmetov, ki se pojavijo na prvi in drugi stopnji
+SELECT p1.ime
+FROM predmeti p1 --zapisi 1. stopnje
+JOIN predmeti p2 --zapisi 2. stopnje
+  ON p1.ime = p2.ime --povežemo vrstice, ki imajo isto ime predmeta
+  --SUBSTR(stolpec/niz, zacetek, dolzina) iz besedila izreže del niza znakov
+WHERE SUBSTR(p1.smer, 1, 1) = '1'
+  AND SUBSTR(p2.smer, 1,1) = '2'
+  
+ALI
+
+SELECT p1.ime, p1.smer, p2.smer
+FROM predmeti p1 --zapisi 1. stopnje
+JOIN predmeti p2 --zapisi 2. stopnje
+  ON p1.ime = p2.ime --povežemo vrstice, ki imajo isto ime predmeta
+WHERE p1.smer LIKE '1%'
+  AND p2.smer LIKE '2%'
+
+b)
+INSERT INTO predmeti(ime, smer)
 SELECT DISTINCT p1.ime, '0Mate'
 FROM predmeti p1
-JOIN predmeti p2 
-    ON p1.ime = p2.ime
+JOIN predmeti p2
+ON p1.ime = p2.ime
 WHERE p1.smer LIKE '1%'
-  AND p2.smer LIKE '2%';
 
 --4) naloga
 --a)
@@ -50,17 +70,18 @@ SELECT
     osebe.id, 
     osebe.ime, 
     osebe.priimek, 
-    COALESCE(SUM(skupine.ure), 0) AS 'skupno števlo ur vaj'
-FROM 
-    osebe 
+    COALESCE(SUM(skupine.ure), 0) AS "skupno število ur vaj"
+FROM osebe 
 LEFT JOIN skupine 
-    ON osebe.id = skupine.učitelj
-    AND (skupine.tip = 'V' OR skupine.tip = 'L') -- zaradi tega pogoja se ure kjer tip = P izpišejo kot NULL
-GROUP BY ime;
+    ON osebe.id = skupine.učitelj 
+    AND (skupine.tip = 'V' OR skupine.tip = 'L')
+GROUP BY osebe.id, osebe.ime, osebe.priimek;
 
 --b)
-SELECT predmeti.id, predmeti.ime, predmeti.smer FROM skupine 
-JOIN dodelitve ON skupine.id = dodelitve.skupina
-JOIN predmeti ON dodelitve.skupina = predmeti.id
-GROUP BY predmeti.ime
-HAVING tip = 'S' and tip <> 'P' and tip <> 'V';
+SELECT  predmeti.id, predmeti.ime, predmeti.smer   
+    FROM skupine 
+    JOIN dodelitve ON skupine.id = dodelitve.skupina
+    JOIN predmeti  ON dodelitve.predmet = predmeti.id  
+GROUP BY predmeti.id, predmeti.ime, predmeti.smer   
+HAVING SUM(CASE WHEN skupine.tip = 'S' THEN 1 ELSE 0 END) > 1 
+    AND SUM(CASE WHEN skupine.tip NOT LIKE 'S' THEN 1 ELSE 0 END) = 0
